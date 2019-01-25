@@ -4,7 +4,7 @@
 import html
 from urllib.request import urlopen, Request
 
-accu_url = 'https://www.accuweather.com/ru/ua/dnipro/322722/daily-weather-forecast/322722?day=1'
+accu_url = 'https://www.accuweather.com/ru/ua/dnipro/322722/weather-forecast/322722'
 headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'}
 accu_request = Request(accu_url, headers=headers)
 response = urlopen(accu_request).read().decode('utf-8')
@@ -46,16 +46,41 @@ for chair in response[start:]:
     else:
         break
 
-today = response.rfind('<b class="noprint">Сегодня</b>')
+today = response.rfind('<b class="noprint">Сегодня</b>')  # start block with today weather forecast
 response = response[today:]
-weather_cond = response.find('<a id="t_cloud_cover" href=')
+weather_cond = response.find('<a id="t_cloud_cover" href=')  # start block with weather conditions
 response = response[weather_cond:]
 start = response.find("""onmouseover="tooltip(this, '<b>""")\
-        + len("""onmouseover="tooltip(this, '<b>""")
+        + len("""onmouseover="tooltip(this, '<b>""")  # start weather conditions info
 conditions_rp5 = ''
 for chair in response[start:]:
     if chair != '<':
         conditions_rp5 += chair
+    else:
+        break
+
+sinoptik_url = 'https://sinoptik.ua/%D0%BF%D0%BE%D0%B3%D0%BE%D0%B4%D0%B0' \
+               '-%D0%B4%D0%BD%D0%B5%D0%BF%D1%80-303007131'
+headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'}
+sinoptik_request = Request(sinoptik_url, headers=headers)
+response = urlopen(sinoptik_request).read().decode('utf-8')
+response = str(response)
+
+tag = response.find('<p class="today-temp">')
+start = tag + len('<p class="today-temp">')
+temperature_sinoptik = ''
+for chair in response[start:]:
+    if chair != '<':
+        temperature_sinoptik += chair
+    else:
+        break
+
+tag = response.find('jpg" alt="')
+start = tag + len('jpg" alt="')
+conditions_sinoptik = ''
+for chair in response[start:]:
+    if chair != '"':
+        conditions_sinoptik += chair
     else:
         break
 
@@ -64,4 +89,7 @@ print('Temperature: {}'.format(html.unescape(temperature_accu)))
 print('Weather conditions: {}\n'.format(conditions_accu))
 print('From rp5.ua:')
 print('Temperature: {}'.format(html.unescape(temperature_rp5)))
-print('Weather conditions: {}'.format(conditions_rp5.capitalize()))
+print('Weather conditions: {}\n'.format(conditions_rp5))
+print('From sinoptik.ua:')
+print('Temperature: {}'.format(html.unescape(temperature_sinoptik)))
+print('Weather conditions: {}'.format(conditions_sinoptik))
