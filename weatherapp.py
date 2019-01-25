@@ -29,8 +29,8 @@ for chair in response[start:]:
         break
 
 rp5_url = 'http://rp5.ua/%D0%9F%D0%BE%D0%B3%D0%BE%D0%B4%D0%B0' \
-          '_%D0%B2_%D0%94%D0%BD%D0%B5%D0%BF%D1%80%D0%B5_' \
-          '(%D0%94%D0%BD%D0%B5%D0%BF%D1%80%D0%BE%D0%BF%D0' \
+          '_%D0%B2_%D0%94%D0%BD%D0%B5%D0%BF%D1%80%D0%B5' \
+          '_(%D0%94%D0%BD%D0%B5%D0%BF%D1%80%D0%BE%D0%BF%D0' \
           '%B5%D1%82%D1%80%D0%BE%D0%B2%D1%81%D0%BA%D0%B5)'
 headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'}
 rp5_request = Request(rp5_url, headers=headers)
@@ -46,8 +46,12 @@ for chair in response[start:]:
     else:
         break
 
-tag = response.find('°F</span>, ')
-start = tag + len('°F</span>, ')
+today = response.rfind('<b class="noprint">Сегодня</b>')
+response = response[today:]
+weather_cond = response.find('<a id="t_cloud_cover" href=')
+response = response[weather_cond:]
+start = response.find("""onmouseover="tooltip(this, '<b>""")\
+        + len("""onmouseover="tooltip(this, '<b>""")
 conditions_rp5 = ''
 for chair in response[start:]:
     if chair != '<':
