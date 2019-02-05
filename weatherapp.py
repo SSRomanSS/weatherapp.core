@@ -4,92 +4,101 @@
 import html
 from urllib.request import urlopen, Request
 
-accu_url = 'https://www.accuweather.com/ru/ua/dnipro/322722/weather-forecast/322722'
-headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'}
-accu_request = Request(accu_url, headers=headers)
-response = urlopen(accu_request).read().decode('utf-8')
-response = str(response)
-
-tag = response.find('<span class="large-temp">')
-start = tag + len('<span class="large-temp">')
-temperature_accu = ''
-for chair in response[start:]:
-    if chair != '<':
-        temperature_accu += chair
-    else:
-        break
-
-tag = response.find('<span class="cond">')
-start = tag + len('<span class="cond">')
-conditions_accu = ''
-for chair in response[start:]:
-    if chair != '<':
-        conditions_accu += chair
-    else:
-        break
-
-rp5_url = 'http://rp5.ua/%D0%9F%D0%BE%D0%B3%D0%BE%D0%B4%D0%B0' \
+ACCU_URL = 'https://www.accuweather.com/ru/ua/dnipro/322722/weather-forecast/322722'
+ACCU_TAGS = ('<span class="large-temp">', '<span class="cond">')
+RP5_URL = 'http://rp5.ua/%D0%9F%D0%BE%D0%B3%D0%BE%D0%B4%D0%B0' \
           '_%D0%B2_%D0%94%D0%BD%D0%B5%D0%BF%D1%80%D0%B5' \
           '_(%D0%94%D0%BD%D0%B5%D0%BF%D1%80%D0%BE%D0%BF%D0' \
           '%B5%D1%82%D1%80%D0%BE%D0%B2%D1%81%D0%BA%D0%B5)'
-headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'}
-rp5_request = Request(rp5_url, headers=headers)
-response = urlopen(rp5_request).read().decode('utf-8')
-response = str(response)
-
-tag = response.find('style="display: block;">')
-start = tag + len('style="display: block;">')
-temperature_rp5 = ''
-for chair in response[start:]:
-    if chair != '<':
-        temperature_rp5 += chair
-    else:
-        break
-
-today = response.rfind('<b class="noprint">Сегодня</b>')  # start block with today weather forecast
-response = response[today:]
-weather_cond = response.find('<a id="t_cloud_cover" href=')  # start block with weather conditions
-response = response[weather_cond:]
-start = response.find("""onmouseover="tooltip(this, '<b>""")\
-        + len("""onmouseover="tooltip(this, '<b>""")  # start weather conditions info
-conditions_rp5 = ''
-for chair in response[start:]:
-    if chair != '<':
-        conditions_rp5 += chair
-    else:
-        break
-
-sinoptik_url = 'https://sinoptik.ua/%D0%BF%D0%BE%D0%B3%D0%BE%D0%B4%D0%B0' \
+RP5_TAGS = ('style="display: block;">', '<div id="ftab_1_content"',
+            '<div class="underTitle">', """onmouseover="tooltip(this, '<b>""")
+SINOPTIK_URL = 'https://sinoptik.ua/%D0%BF%D0%BE%D0%B3%D0%BE%D0%B4%D0%B0' \
                '-%D0%B4%D0%BD%D0%B5%D0%BF%D1%80-303007131'
-headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'}
-sinoptik_request = Request(sinoptik_url, headers=headers)
-response = urlopen(sinoptik_request).read().decode('utf-8')
-response = str(response)
+SINOPTIK_TAGS = ('<p class="today-temp">', 'jpg" alt="')
 
-tag = response.find('<p class="today-temp">')
-start = tag + len('<p class="today-temp">')
-temperature_sinoptik = ''
-for chair in response[start:]:
-    if chair != '<':
-        temperature_sinoptik += chair
-    else:
-        break
 
-tag = response.find('jpg" alt="')
-start = tag + len('jpg" alt="')
-conditions_sinoptik = ''
-for chair in response[start:]:
-    if chair != '"':
-        conditions_sinoptik += chair
-    else:
-        break
+def get_page_content(url):
+    """
 
-print('From AccuWeather:')
-print('Temperature: {}'.format(html.unescape(temperature_accu)))
-print('Weather conditions: {}\n'.format(conditions_accu))
-print('From rp5.ua:')
-print('Temperature: {}'.format(html.unescape(temperature_rp5)))
-print('Weather conditions: {}\n'.format(conditions_rp5))
-print('From sinoptik.ua:')
-print('Temperature: {}'.format(html.unescape(temperature_sinoptik)))
-print('Weather conditions: {}'.format(conditions_sinoptik))
+    :param url:
+    :return:
+    """
+    headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'}
+    request = Request(url, headers=headers)
+    page_content = str(urlopen(request).read().decode('utf-8'))
+    return page_content
+
+
+def get_temperature_info(page_content, temperature_tag):
+    """
+
+    :param page_content:
+    :param temperature_tag:
+    :return:
+    """
+    ind = page_content.find(temperature_tag)
+    start = ind + len(temperature_tag)
+    temperature_value = ''
+    for chair in page_content[start:]:
+        if chair != '<':
+            temperature_value += chair
+        else:
+            temperature_value = temperature_value.replace(' ', '').replace('C', '')
+            break
+    return temperature_value
+
+
+def get_conditions_info(page_content, conditions_tags):
+    """
+
+    :param page_content:
+    :param conditions_tags:
+    :return:
+    """
+    content = page_content
+    for i in range(len(conditions_tags)):
+        ind = content.find(conditions_tags[i])
+        start = ind + len(conditions_tags[i])
+        content = content[start:]
+    conditions_value = ''
+    for chair in content:
+        if chair not in '"<':
+            conditions_value += chair
+        else:
+            break
+    return conditions_value
+
+
+def result_output(website, temperature, conditions):
+    """
+
+    :param website:
+    :param temperature:
+    :param conditions:
+    :return:
+    """
+    print('From {}:'.format(website))
+    print('Temperature: {}'.format(html.unescape(temperature)))
+    print('Weather conditions: {}\n'.format(conditions))
+
+
+def main():
+    """
+
+    :return:
+    """
+    weather_sites = {'Accuweather': (ACCU_URL, ACCU_TAGS),
+                     'rp5.ua': (RP5_URL, RP5_TAGS),
+                     'sinoptik.ua': (SINOPTIK_URL, SINOPTIK_TAGS)}
+    for name in weather_sites:
+        url, tags = weather_sites[name]
+        temperature_tag = tags[0]
+        conditions_tags = tags[1:]
+        page_content = get_page_content(url)
+        temperature = get_temperature_info(page_content, temperature_tag)
+        conditions = get_conditions_info(page_content, conditions_tags)
+        result_output(name, temperature, conditions)
+
+
+if __name__ == '__main__':
+    main()
