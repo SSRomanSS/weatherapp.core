@@ -105,11 +105,8 @@ def main(argv):
     :return:
     """
     parser = argparse.ArgumentParser()
-    parser.add_argument('site', help='Website choice', nargs='?')
-    if parser.parse_args(argv).site:
-        input_name = parser.parse_args(argv).site
-    else:
-        input_name = ''
+    parser.add_argument('site', help='Website choice', nargs='?', default='')
+    input_name = parser.parse_args(argv).site
 
     for name in weather_source(input_name):
         url, temp_tags, cond_tags = weather_source(input_name)[name]
