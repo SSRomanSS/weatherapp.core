@@ -8,6 +8,8 @@ import configparser
 import html
 import os
 from pathlib import Path
+import hashlib
+import time
 from urllib.parse import quote
 from urllib.request import urlopen, Request
 from bs4 import BeautifulSoup
@@ -47,17 +49,85 @@ CITY = 'Dnipro'
 
 CONFIG_FILE = 'weatherapp.ini'
 
+CACHE_DIR = '.weather_cache'
 
-def get_page_content(url):
+TIME_CACHE = 300
+
+
+def get_page_content(url, refresh):
+    """
+
+    :param url:
+    :param refresh:
+    :return:
+    """
+    if get_cache(url) and cache_lifetime(url) and refresh is False:
+        content = get_cache(url)
+    else:
+        headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'}
+        request = Request(url, headers=headers)
+        content = urlopen(request).read()
+        save_cache(url, content)
+    page_content = BeautifulSoup(content, features="lxml")
+    return page_content
+
+
+def get_cache_dir():
+    """
+
+    :return:
+    """
+    return Path.home() / CACHE_DIR
+
+
+def url_hash(url):
     """
 
     :param url:
     :return:
     """
-    headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'}
-    request = Request(url, headers=headers)
-    page_content = BeautifulSoup(urlopen(request), features="lxml")
-    return page_content
+    return hashlib.md5(url.encode('utf8')).hexdigest()
+
+
+def save_cache(url, page_source):
+    """
+
+    :param url:
+    :param page_source:
+    :return:
+    """
+    cache_dir = get_cache_dir()
+    cache_file = url_hash(url)
+    if not cache_dir.exists():
+        cache_dir.mkdir(parents=True)
+
+    with (cache_dir / cache_file).open('wb') as file:
+        file.write(page_source)
+
+
+def get_cache(url):
+    """
+
+    :param url:
+    :return:
+    """
+    cache = b''
+    cache_dir = get_cache_dir()
+    cache_file = url_hash(url)
+    if (cache_dir / cache_file).exists():
+        with (cache_dir / cache_file).open('rb') as file:
+            cache = file.read()
+    return cache
+
+
+def cache_lifetime(url):
+    """
+
+    :param url:
+    :return:
+    """
+    cash_file_path = get_cache_dir() / url_hash(url)
+    return time.time() - cash_file_path.stat().st_mtime < TIME_CACHE
 
 
 def weather_source(input_name):
@@ -123,12 +193,15 @@ def create_parser():
     parser.add_argument('-f', '--file', help='The name of file for output',
                         type=argparse.FileType(mode='w', encoding='utf8'))
     parser.add_argument('-s', '--settings', nargs='?')
+    parser.add_argument('-r', '--refresh', help='Refresh cache', action='store_true')
     return parser
 
 
-def create_settings(site_set):
+def create_settings(site_set, refresh):
     """
 
+    :param site_set:
+    :param refresh:
     :return:
     """
     commands = {'accu': (ACCU_SET, ACCU_LIST, ACCU_NAME, ACUU_LINK),
@@ -137,7 +210,7 @@ def create_settings(site_set):
     if site_set not in commands:
         sys.exit('Unknown command, choice from: accu, rp5, reset')
     link_set, locations_list, location_name, location_link = commands[site_set]
-    content = get_page_content(link_set)
+    content = get_page_content(link_set, refresh)
     if site_set == 'rp5':  # на RP5 в структурі сторінки неповні лінки
         dom = htmldom.HtmlDom(link_set)
         dom = dom.createDom()
@@ -167,10 +240,10 @@ def create_settings(site_set):
             if 'http' not in search_list[select][1]:  # якщо лінк не повний
                 content = get_page_content(
                     dom.baseURL + '/' +
-                    quote(search_list[select][1], encoding='utf8'))  # лінк кирилицею
+                    quote(search_list[select][1], encoding='utf8'), refresh)  # лінк кирилицею
                 link = dom.baseURL + '/' + quote(search_list[select][1])
             if 'http' in search_list[select][1]:
-                content = get_page_content(search_list[select][1])
+                content = get_page_content(search_list[select][1], refresh)
                 link = search_list[select][1]
             name = search_list[select][0]
         else:
@@ -266,16 +339,17 @@ def main():
     input_name = create_parser().parse_args(sys.argv[1:]).site
     out_file = create_parser().parse_args(sys.argv[1:]).file
     site_set = create_parser().parse_args(sys.argv[1:]).settings
+    refresh = create_parser().parse_args(sys.argv[1:]).refresh
     if input_name and os.path.exists(get_settings_file()):
         sys.exit('Reset the settings: [-s] reset')
     if site_set == 'reset' and os.path.exists(get_settings_file()):
         os.remove(get_settings_file())
     if site_set and site_set != 'reset':
-        create_settings(site_set)
+        create_settings(site_set, refresh)
     out_dict = {}
     for name in weather_source(input_name):
         url, temp_tags, cond_tags = weather_source(input_name)[name]
-        page_content = get_page_content(url)
+        page_content = get_page_content(url, refresh)
         temperature = get_weather_info(page_content, temp_tags)
         conditions = get_weather_info(page_content, cond_tags)
         result_output(name, temperature, conditions)
