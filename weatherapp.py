@@ -29,7 +29,7 @@ RP5_LIST = (['div', {'class': 'country_map_links'}],
             ['h3', {}],)
 RP5_NAME = (['a', {'href': True}],)
 RP5_LINK = (['a', {'href': True}],)
-RP5_VAR = ('div', {'class': 'city_link'})  # для додатокового пошуку на деяких кінцевих сторінквх
+RP5_VAR = ('div', {'class': 'city_link'})  # для додатокового пошуку на деяких кінцевих сторінках
 RP5_URL = 'http://rp5.ua/%D0%9F%D0%BE%D0%B3%D0%BE%D0%B4%D0%B0_%D0%B2_' \
           '%D0%94%D0%BD%D0%B5%D0%BF%D1%80%D0%B5_(%D0%94%D0%BD%D0%B5%D0%' \
           'BF%D1%80%D0%BE%D0%BF%D0%B5%D1%82%D1%80%D0%BE%D0%B2%D1%81%D0%BA%D0%B5)'
@@ -130,6 +130,18 @@ def cache_lifetime(url):
     return time.time() - cash_file_path.stat().st_mtime < TIME_CACHE
 
 
+def clear_cache():
+    """
+
+    :return:
+    """
+    cache_dir = get_cache_dir()
+    if cache_dir.exists():
+        for file in os.listdir(str(cache_dir)):
+            if time.time() - (cache_dir / file).stat().st_mtime > TIME_CACHE:
+                os.remove(str(cache_dir / file))
+
+
 def weather_source(input_name):
     """
 
@@ -194,6 +206,7 @@ def create_parser():
                         type=argparse.FileType(mode='w', encoding='utf8'))
     parser.add_argument('-s', '--settings', nargs='?')
     parser.add_argument('-r', '--refresh', help='Refresh cache', action='store_true')
+    parser.add_argument('clearcache', nargs='?', default=None)
     return parser
 
 
@@ -336,6 +349,7 @@ def main():
 
     :return:
     """
+    clear_cache()
     input_name = create_parser().parse_args(sys.argv[1:]).site
     out_file = create_parser().parse_args(sys.argv[1:]).file
     site_set = create_parser().parse_args(sys.argv[1:]).settings
