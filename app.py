@@ -48,12 +48,12 @@ class App:
         """
         if os.path.exists(provider.get_settings_file()):
             print(provider.get_settings()[0])
-            print('=' * 20, end='\n')
+            print('=' * 20)
         else:
             print(config.CITY)
-            print('=' * 20, end='\n')
+            print('=' * 20)
         print('From {}:'.format(website))
-        print('-' * 20, end='\n')
+        print('-' * 20)
         print('Temperature: {}'
               .format(html.unescape(temperature.replace(' ', ''))))
         print('Weather conditions:' + '\n{}\n'
