@@ -1,7 +1,8 @@
 """
 Weather search script constants
 """
-ACCU_PROVIDER = 'accu'
+ACCU_SHORTCUT = 'accu'
+ACCU_TITLE = 'Accuweather'
 ACCU_SET = 'https://www.accuweather.com/ru/browse-locations'
 ACCU_LIST = (['li', {'class': 'drilldown cl'}],)
 ACCU_NAME = (['em', {}],)
@@ -10,6 +11,8 @@ ACCU_URL = 'https://www.accuweather.com/ru/ua/dnipro/322722/weather-forecast/322
 ACCU_TAGS_TEMP = (['span', {'class': 'large-temp'}],)
 ACCU_TAGS_COND = (['span', {'class': 'cond'}],)
 
+RP5_SHORTCUT = 'rp5'
+RP5_TITLE = 'RP5'
 RP5_SET = 'http://rp5.ua'
 RP5_LIST = (['div', {'class': 'country_map_links'}],
             ['h3', {}],)
