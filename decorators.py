@@ -83,7 +83,7 @@ def function_arguments(func):
         :return:
         """
         if args:
-            print('args: of "{}()"'.format(func.__name__))
+            print('args of "{}()":'.format(func.__name__))
             for i in args:
                 print(i)
         if kwargs:

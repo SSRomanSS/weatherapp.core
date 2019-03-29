@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-
+Container of provider
 """
 from providers import AccuWeatherProvider, Rp5WeatherProvider
 
