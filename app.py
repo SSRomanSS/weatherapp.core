@@ -108,7 +108,12 @@ def main():
 
     :return:
     """
-    return App().run()
+    try:
+        return App().run()
+    except Exception:
+        if App().commands.debug:
+            raise
+        sys.exit('Run error, contact with developer')
 
 
 if __name__ == '__main__':
