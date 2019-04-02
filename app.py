@@ -18,9 +18,8 @@ class App:
     Main application
     """
     def __init__(self):
-        self.parser = self._create_parser()
         self.provider_manager = ProviderManager()
-        self.commands = self.parser.parse_args(sys.argv[1:])
+        self.commands = self._create_parser().parse_args(sys.argv[1:])
 
     @staticmethod
     def _create_parser():
@@ -40,6 +39,7 @@ class App:
                             nargs='?')
         parser.add_argument('-r', '--refresh', help='Refresh cache', action='store_true')
         parser.add_argument('-l', '--list', help='Output available providers ', action='store_true')
+        parser.add_argument('-d', '--debug', help='Develop mode', action='store_true')
         return parser
 
     @staticmethod

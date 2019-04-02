@@ -3,13 +3,16 @@
 
 import abc
 import os
+import sys
 import time
 from pathlib import Path
+import urllib.error
 from urllib.request import urlopen, Request
 import argparse
 import configparser
 import hashlib
 from bs4 import BeautifulSoup
+
 
 import config
 
@@ -60,9 +63,14 @@ class WeatherProvider(Command):
         if self.get_cache(url) and self.cache_lifetime(url) and self.app.commands.refresh is False:
             content = self.get_cache(url)
         else:
-            headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'}
-            request = Request(url, headers=headers)
-            content = urlopen(request).read()
+            try:
+                headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'}
+                request = Request(url, headers=headers)
+                content = urlopen(request).read()  # if url is damaged
+            except urllib.error.URLError:
+                if self.app.commands.debug:
+                    raise
+                sys.exit('Bad configfile, use --reset')
             self.save_cache(url, content)
         page_content = BeautifulSoup(content, features="lxml")
         return page_content
@@ -202,7 +210,12 @@ class WeatherProvider(Command):
         # which does string interpolation, for instance making it impossible to use "%".
         # Switches to RawConfigParser to avoid any special treatment of configuration values
         open(self.get_settings_file(), 'r+')
-        settings.read(self.get_settings_file(), encoding='utf8')
+        try:
+            settings.read(self.get_settings_file(), encoding='utf8')  # if configfile is damaged
+        except configparser.Error:
+            if self.app.commands.debug:
+                raise
+            sys.exit('Bad configfile, use --reset')
         city = settings.get(provider_name, 'city')
         url = settings.get(provider_name, 'url')
         provider_name = settings.get(provider_name, 'shortcut')
@@ -227,6 +240,11 @@ class WeatherProvider(Command):
         """
         url, temp_tags, cond_tags = self.weather_source(provider_name).get(provider_name)
         page_content = self.get_page_content(url)
-        temperature = self.get_weather_info(page_content, temp_tags)
-        conditions = self.get_weather_info(page_content, cond_tags)
+        try:
+            temperature = self.get_weather_info(page_content, temp_tags)  # if url is damaged
+            conditions = self.get_weather_info(page_content, cond_tags)  # if url is damaged
+        except (KeyError, AttributeError):
+            if self.app.commands.debug:
+                raise
+            sys.exit('Bad configfile. Reset the settings for {}'.format(provider_name))
         return temperature, conditions

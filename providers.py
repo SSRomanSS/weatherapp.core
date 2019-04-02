@@ -57,8 +57,15 @@ class AccuWeatherProvider(WeatherProvider):
                 try:
                     select = int(input('Make your choice, input the number:\n>'))
                 except ValueError:
-                    sys.exit('You input not number')
-                content = self.get_page_content(search_list[select][1])
+                    if self.app.commands.debug:
+                        raise
+                    sys.exit('You input not number. Restart')
+                try:
+                    content = self.get_page_content(search_list[select][1])
+                except IndexError:
+                    if self.app.commands.debug:
+                        raise
+                    sys.exit('Selected number is not in list')
                 url = search_list[select][1]
                 city = search_list[select][0]
             else:
@@ -122,10 +129,17 @@ class Rp5WeatherProvider(WeatherProvider):
                 try:
                     select = int(input('Make your choice, input the number:\n>'))
                 except ValueError:
-                    sys.exit('You input not number')
-                content = self.get_page_content(
-                    dom.baseURL + '/' +
-                    quote(search_list[select][1], encoding='utf8'))
+                    if self.app.commands.debug:
+                        raise
+                    sys.exit('You input not number. Restart')
+                try:
+                    content = self.get_page_content(
+                        dom.baseURL + '/' +
+                        quote(search_list[select][1], encoding='utf8'))
+                except IndexError:
+                    if self.app.commands.debug:
+                        raise
+                    sys.exit('Selected number is not in list. Restart')
                 url = dom.baseURL + '/' + quote(search_list[select][1])
                 city = search_list[select][0]
             else:
