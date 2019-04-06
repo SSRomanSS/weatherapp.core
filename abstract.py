@@ -60,7 +60,7 @@ class WeatherProvider(Command):
         :param url:
         :return:
         """
-        if self.get_cache(url) and self.cache_lifetime(url) and self.app.commands.refresh is False:
+        if self.get_cache(url) and self.cache_lifetime(url) and not self.app.commands.refresh:
             content = self.get_cache(url)
         else:
             try:
@@ -68,9 +68,12 @@ class WeatherProvider(Command):
                 request = Request(url, headers=headers)
                 content = urlopen(request).read()  # if url is damaged
             except urllib.error.URLError:
+                msg = 'Bad configfile, use --reset'
                 if self.app.commands.debug:
-                    raise
-                sys.exit('Bad configfile, use --reset')
+                    self.app.logger.exception(msg)
+                else:
+                    self.app.logger.error(msg)
+                sys.exit()
             self.save_cache(url, content)
         page_content = BeautifulSoup(content, features="lxml")
         return page_content
@@ -213,9 +216,12 @@ class WeatherProvider(Command):
         try:
             settings.read(self.get_settings_file(), encoding='utf8')  # if configfile is damaged
         except configparser.Error:
+            msg = 'Bad configfile, use --reset'
             if self.app.commands.debug:
-                raise
-            sys.exit('Bad configfile, use --reset')
+                self.app.logger.exception(msg)
+            else:
+                self.app.logger.error(msg)
+            sys.exit()
         city = settings.get(provider_name, 'city')
         url = settings.get(provider_name, 'url')
         provider_name = settings.get(provider_name, 'shortcut')
@@ -244,7 +250,10 @@ class WeatherProvider(Command):
             temperature = self.get_weather_info(page_content, temp_tags)  # if url is damaged
             conditions = self.get_weather_info(page_content, cond_tags)  # if url is damaged
         except (KeyError, AttributeError):
+            msg = 'Bad configfile. Reset the settings for %s'
             if self.app.commands.debug:
-                raise
-            sys.exit('Bad configfile. Reset the settings for {}'.format(provider_name))
+                self.app.logger.exception(msg, provider_name)
+            else:
+                self.app.logger.error(msg, provider_name)
+            sys.exit()
         return temperature, conditions

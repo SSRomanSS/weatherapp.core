@@ -8,6 +8,7 @@ import os
 import sys
 
 import config
+import logging
 from providermanager import ProviderManager
 import abstract
 from configurate import Configurate, Providers
@@ -17,6 +18,11 @@ class App:
     """
     Main application
     """
+    logger = logging.getLogger()
+    LOG_LEVEL = {0: logging.WARNING,
+                 1: logging.INFO,
+                 2: logging.DEBUG}
+
     def __init__(self):
         self.provider_manager = ProviderManager()
         self.commands = self._create_parser().parse_args(sys.argv[1:])
@@ -40,7 +46,22 @@ class App:
         parser.add_argument('-r', '--refresh', help='Refresh cache', action='store_true')
         parser.add_argument('-l', '--list', help='Output available providers ', action='store_true')
         parser.add_argument('-d', '--debug', help='Develop mode', action='store_true')
+        parser.add_argument('-v', '--verbose', action='count', dest='log_level', default=0)
         return parser
+
+    def configure_logger(self):
+        """
+
+        :return:
+        """
+        root_logger = logging.getLogger('')
+        root_logger.setLevel(logging.DEBUG)
+        console = logging.StreamHandler()
+        console_level = self.LOG_LEVEL.get(self.commands.log_level)
+        console.setLevel(console_level)
+        formatter = logging.Formatter('%(asctime)s %(name)s %(levelname)s %(message)s')
+        console.setFormatter(formatter)
+        root_logger.addHandler(console)
 
     @staticmethod
     def result_output(website, temperature, conditions, provider):
@@ -69,6 +90,7 @@ class App:
         :return:
         """
         abstract.WeatherProvider(App()).clear_cache()
+        self.configure_logger()
         provider_box = self.provider_manager._providers
 
         if self.commands.site is not None and self.commands.site not in provider_box\
@@ -108,12 +130,7 @@ def main():
 
     :return:
     """
-    try:
-        return App().run()
-    except Exception:
-        if App().commands.debug:
-            raise
-        sys.exit('Run error, contact with developer')
+    return App().run()
 
 
 if __name__ == '__main__':

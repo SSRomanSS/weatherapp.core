@@ -57,15 +57,21 @@ class AccuWeatherProvider(WeatherProvider):
                 try:
                     select = int(input('Make your choice, input the number:\n>'))
                 except ValueError:
+                    msg = 'You input not number. Restart'
                     if self.app.commands.debug:
-                        raise
-                    sys.exit('You input not number. Restart')
+                        self.app.logger.exception(msg)
+                    else:
+                        self.app.logger.error(msg)
+                    sys.exit()
                 try:
                     content = self.get_page_content(search_list[select][1])
                 except IndexError:
+                    msg = 'Selected number is not in list'
                     if self.app.commands.debug:
-                        raise
-                    sys.exit('Selected number is not in list')
+                        self.app.logger.exception(msg)
+                    else:
+                        self.app.logger.error(msg)
+                    sys.exit()
                 url = search_list[select][1]
                 city = search_list[select][0]
             else:
@@ -129,17 +135,23 @@ class Rp5WeatherProvider(WeatherProvider):
                 try:
                     select = int(input('Make your choice, input the number:\n>'))
                 except ValueError:
+                    msg = 'You input not number. Restart'
                     if self.app.commands.debug:
-                        raise
-                    sys.exit('You input not number. Restart')
+                        self.app.logger.exception(msg)
+                    else:
+                        self.app.logger.error(msg)
+                    sys.exit()
                 try:
                     content = self.get_page_content(
                         dom.baseURL + '/' +
                         quote(search_list[select][1], encoding='utf8'))
                 except IndexError:
+                    msg = 'Selected number is not in list'
                     if self.app.commands.debug:
-                        raise
-                    sys.exit('Selected number is not in list. Restart')
+                        self.app.logger.exception(msg)
+                    else:
+                        self.app.logger.error(msg)
+                    sys.exit()
                 url = dom.baseURL + '/' + quote(search_list[select][1])
                 city = search_list[select][0]
             else:
