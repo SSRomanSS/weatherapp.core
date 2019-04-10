@@ -3,9 +3,10 @@
 Container of provider
 """
 from providers import AccuWeatherProvider, Rp5WeatherProvider
+import abstract
 
 
-class ProviderManager:
+class ProviderManager(abstract.Manager):
     """
     Provider box
     """
@@ -56,7 +57,7 @@ class ProviderManager:
         """
         return name in self._providers
 
-    def __getattr__(self, name):
+    def __getitem__(self, name):
         """
 
         :param name:

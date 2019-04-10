@@ -10,8 +10,8 @@ import sys
 import config
 import logging
 from providermanager import ProviderManager
+from commandmanager import CommandManager
 import abstract
-from configurate import Configurate, Providers
 
 
 class App:
@@ -25,6 +25,7 @@ class App:
 
     def __init__(self):
         self.provider_manager = ProviderManager()
+        self.command_manager = CommandManager()
         self.commands = self._create_parser().parse_args(sys.argv[1:])
 
     @staticmethod
@@ -44,7 +45,10 @@ class App:
                                                      'Use command "reset" for default settings',
                             nargs='?')
         parser.add_argument('-r', '--refresh', help='Refresh cache', action='store_true')
-        parser.add_argument('-l', '--list', help='Output available providers ', action='store_true')
+        parser.add_argument('-p', '--providers',
+                            help='Output available providers ',
+                            action='store_const',
+                            const='providers')
         parser.add_argument('-d', '--debug', help='Develop mode', action='store_true')
         parser.add_argument('-v', '--verbose', action='count', dest='log_level', default=0)
         return parser
@@ -105,12 +109,12 @@ class App:
             for provider in provider_box:
                 provider_box[provider](App).create_default_settings()
                 # create file with default settings
-        if self.commands.list:
+        if self.commands.providers:
             print('Available providers:')
-            sys.exit(Providers(App()).run())
+            sys.exit(self.command_manager.get(self.commands.providers)(App()).run())
 
         if self.commands.settings in provider_box:
-            Configurate(App()).run(self.commands.settings)
+            self.command_manager.get('settings')(App()).run(self.commands.settings)
             # create settings for selected provider
 
         if self.commands.site in provider_box:

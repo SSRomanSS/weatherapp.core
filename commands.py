@@ -1,7 +1,7 @@
 """
 App commands
 """
-
+import re
 from abstract import Command
 
 
@@ -9,6 +9,7 @@ class Configurate(Command):
     """
     Configure provider
     """
+    name = 'settings'
 
     def run(self, provider_name):
         """
@@ -22,6 +23,7 @@ class Providers(Command):
     """
     List of providers
     """
+    name = 'providers'
 
     def run(self):
         """
