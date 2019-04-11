@@ -1,46 +1,20 @@
-""" Abstract classes for project
+"""
+Abstract classes for project
 """
 
-import abc
 import os
 import sys
 import time
 from pathlib import Path
 import urllib.error
 from urllib.request import urlopen, Request
-import argparse
 import configparser
 import hashlib
 from bs4 import BeautifulSoup
 
 
-import config
-
-
-class Command(abc.ABC):
-
-    """ Base class for commands.
-    :param app: Main application instance
-    :type app: `app.App`
-    """
-
-    def __init__(self, app):
-        self.app = app
-
-    @staticmethod
-    def get_parser():
-        """
-        Initialize argument parser for command
-        """
-        parser = argparse.ArgumentParser()
-        return parser
-
-    @abc.abstractmethod
-    def run(self, *args):
-        """
-
-        :return:
-        """
+from weatherap.core import config
+from weatherap.core.abstract.command import Command
 
 
 class WeatherProvider(Command):
@@ -257,43 +231,3 @@ class WeatherProvider(Command):
                 self.app.logger.error(msg, provider_name)
             sys.exit()
         return temperature, conditions
-
-
-class Manager(abc.ABC):
-
-    """
-    Abstract class for project command managers.
-    """
-
-    @abc.abstractmethod
-    def add(self, name, command):
-        """
-
-        :param name:
-        :param command:
-        :return:
-        """
-
-    @abc.abstractmethod
-    def get(self, name):
-        """
-
-        :param name:
-        :return:
-        """
-
-    @abc.abstractmethod
-    def __getitem__(self, name):
-        """
-
-        :param name:
-        :return:
-        """
-
-    @abc.abstractmethod
-    def __contains__(self, name):
-        """
-
-        :param name:
-        :return:
-        """

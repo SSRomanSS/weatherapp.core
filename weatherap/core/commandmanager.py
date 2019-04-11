@@ -1,8 +1,8 @@
 """
 
 """
-from commands import Configurate, Providers
-import providermanager
+from weatherap.core.commands import Configurate, Providers
+from weatherap.core import providermanager
 
 
 class CommandManager(providermanager.ProviderManager):

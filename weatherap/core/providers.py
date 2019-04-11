@@ -6,8 +6,8 @@ import sys
 from urllib.parse import quote
 from htmldom import htmldom
 
-import config
-from abstract import WeatherProvider
+from weatherap.core import config
+from weatherap.core.abstract import WeatherProvider
 
 
 class AccuWeatherProvider(WeatherProvider):

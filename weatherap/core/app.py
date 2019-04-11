@@ -7,11 +7,12 @@ import html
 import os
 import sys
 
-import config
+
+from weatherap.core import config
 import logging
-from providermanager import ProviderManager
-from commandmanager import CommandManager
-import abstract
+from weatherap.core.providermanager import ProviderManager
+from weatherap.core.commandmanager import CommandManager
+from weatherap.core.abstract import WeatherProvider
 
 
 class App:
@@ -93,7 +94,7 @@ class App:
         """
         :return:
         """
-        abstract.WeatherProvider(App()).clear_cache()
+        WeatherProvider(App()).clear_cache()
         self.configure_logger()
         provider_box = self.provider_manager._providers
 
@@ -102,10 +103,10 @@ class App:
             sys.exit('Unknown command')
 
         if self.commands.settings == 'reset' and \
-                os.path.exists(abstract.WeatherProvider(App()).get_settings_file()):
-            os.remove(abstract.WeatherProvider(App()).get_settings_file())  # removing settings file
+                os.path.exists(WeatherProvider(App()).get_settings_file()):
+            os.remove(WeatherProvider(App()).get_settings_file())  # removing settings file
 
-        if not os.path.exists(abstract.WeatherProvider(App()).get_settings_file()):
+        if not os.path.exists(WeatherProvider(App()).get_settings_file()):
             for provider in provider_box:
                 provider_box[provider](App).create_default_settings()
                 # create file with default settings
@@ -124,7 +125,7 @@ class App:
 
         for name in configured_provider_box:
             self.result_output(name,
-                               *abstract.WeatherProvider(App()).run(name),
+                               *WeatherProvider(App()).run(name),
                                provider_box[name](App)
                                )
 
