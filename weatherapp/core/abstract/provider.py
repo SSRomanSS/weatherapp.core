@@ -13,8 +13,9 @@ import hashlib
 from bs4 import BeautifulSoup
 
 
-from weatherap.core import config
-from weatherap.core.abstract.command import Command
+
+from weatherapp.core import config
+from weatherapp.core.abstract.command import Command
 
 
 class WeatherProvider(Command):
@@ -107,44 +108,6 @@ class WeatherProvider(Command):
         cash_file_path = self.get_cache_dir() / self.url_hash(url)
         return time.time() - cash_file_path.stat().st_mtime < config.TIME_CACHE
 
-    def weather_source(self, provider_name):
-        """
-
-        :param provider_name:
-        :return:
-        """
-        weather_site = {}
-
-        for provider in self.app.provider_manager._providers:
-            weather_site[self.get_settings(provider)[2]] = \
-                (self.get_settings(provider)[1],  # URL is value 'link' from config file
-                 *config.WEATHER_SITE[self.get_settings(provider)[2]][1:]
-                 )
-
-        if provider_name:
-            weather_site = {provider_name: weather_site[provider_name]}
-        return weather_site
-
-    @staticmethod
-    def get_weather_info(page_content, tags):
-        """
-
-        :param page_content:
-        :param tags:
-        :return:
-        """
-        content = page_content
-        if len(tags) > 1:
-            for i in range(len(tags) - 1):
-                content = content.find(tags[i][0], tags[i][1])
-            result = content.find(tags[-1][0], tags[-1][1]).text
-
-            if result == '':
-                result = content.find(tags[-1][0], tags[-1][1])['alt']
-        else:
-            result = content.find(tags[-1][0], tags[-1][1]).text
-        return result
-
     @staticmethod
     def get_settings_file():
         """
@@ -218,16 +181,16 @@ class WeatherProvider(Command):
         :param provider_name:
         :return:
         """
-        url, temp_tags, cond_tags = self.weather_source(provider_name).get(provider_name)
+        summary_info = {}
+
+        providers = self.app.provider_manager._providers
+        url = self.get_settings(provider_name)[1]
         page_content = self.get_page_content(url)
-        try:
-            temperature = self.get_weather_info(page_content, temp_tags)  # if url is damaged
-            conditions = self.get_weather_info(page_content, cond_tags)  # if url is damaged
-        except (KeyError, AttributeError):
-            msg = 'Bad configfile. Reset the settings for %s'
-            if self.app.commands.debug:
-                self.app.logger.exception(msg, provider_name)
-            else:
-                self.app.logger.error(msg, provider_name)
-            sys.exit()
-        return temperature, conditions
+        weather_info = providers[provider_name](self.app).get_weather_info(page_content)
+        summary_info['City'] = self.get_settings(provider_name)[0]
+        summary_info['Provider'] = providers[provider_name].title
+        for key in weather_info:
+            summary_info[key] = weather_info[key]
+
+        return summary_info
+

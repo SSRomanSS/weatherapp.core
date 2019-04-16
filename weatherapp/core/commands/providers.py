@@ -1,7 +1,7 @@
 """
 App commands
 """
-from weatherap.core.abstract import Command
+from weatherapp.core.abstract import Command
 
 
 class Providers(Command):

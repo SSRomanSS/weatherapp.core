@@ -36,7 +36,7 @@ SINOPTIK_TAGS_COND = (['div', {'class': 'lSide'}],
 
 CITY = 'Dnipro'
 
-CONFIG_FILE = 'ww.ini'
+CONFIG_FILE = 'weatherapp.ini'
 
 CACHE_DIR = '.weather_cache'
 

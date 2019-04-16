@@ -2,8 +2,8 @@
 """
 Container of provider
 """
-from weatherap.core.providers import AccuWeatherProvider, Rp5WeatherProvider
-from weatherap.core import abstract
+from weatherapp.core.providers import AccuWeatherProvider, Rp5WeatherProvider
+from weatherapp.core import abstract
 
 
 class ProviderManager(abstract.Manager):

@@ -1,7 +1,7 @@
 """
 
 """
-from weatherap.core.abstract import Command
+from weatherapp.core.abstract import Command
 
 
 class Configurate(Command):

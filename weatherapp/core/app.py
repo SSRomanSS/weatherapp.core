@@ -3,16 +3,14 @@
 This is weather search script
 """
 import argparse
-import html
 import os
 import sys
-
-
-from weatherap.core import config
 import logging
-from weatherap.core.providermanager import ProviderManager
-from weatherap.core.commandmanager import CommandManager
-from weatherap.core.abstract import WeatherProvider
+
+from weatherapp.core.providermanager import ProviderManager
+from weatherapp.core.commandmanager import CommandManager
+from weatherapp.core.abstract import WeatherProvider
+from weatherapp.core.formatters import TableFormatter
 
 
 class App:
@@ -24,10 +22,14 @@ class App:
                  1: logging.INFO,
                  2: logging.DEBUG}
 
-    def __init__(self):
+    def __init__(self, stdin=None, stdout=None, stderr=None):
+        self.stdin = stdin or sys.stdin
+        self.stdout = stdout or sys.stdout
+        self.stderr = stderr or sys.stderr
         self.provider_manager = ProviderManager()
         self.command_manager = CommandManager()
         self.commands = self._create_parser().parse_args(sys.argv[1:])
+        self.formatters = self._load_formatters()
 
     @staticmethod
     def _create_parser():
@@ -35,15 +37,16 @@ class App:
         :return:
         """
         parser = argparse.ArgumentParser()
-        parser.add_argument('site', help='Choice website:'
-                                         'accu=Accuwether,'
-                                         'rp5=RP5.ua',
-                            nargs='?', default=None)
-        parser.add_argument('-f', '--file', help='The name of file for output',
+        parser.add_argument('site', choices=['accu', 'rp5'],
+                            help='Choice website: accu=Accuwether.ua, rp5=RP5.ua',
+                            nargs='?',
+                            default=None)
+        parser.add_argument('-fo', '--file', help='The name of file for output',
                             type=argparse.FileType(mode='w', encoding='utf8'))
-        parser.add_argument('-s', '--settings', help='Configure the providers with commands:'
-                                                     '"accu" or "rp5". '
-                                                     'Use command "reset" for default settings',
+        parser.add_argument('-s', '--settings', choices=['accu', 'rp5', 'reset'],
+                            help='Configure the providers with commands:'
+                            '"accu" or "rp5".'
+                            'Use command "reset" for default settings',
                             nargs='?')
         parser.add_argument('-r', '--refresh', help='Refresh cache', action='store_true')
         parser.add_argument('-p', '--providers',
@@ -52,7 +55,12 @@ class App:
                             const='providers')
         parser.add_argument('-d', '--debug', help='Develop mode', action='store_true')
         parser.add_argument('-v', '--verbose', action='count', dest='log_level', default=0)
+        parser.add_argument('-f', '--formatter', default='table')
         return parser
+
+    @staticmethod
+    def _load_formatters():
+        return {'table': TableFormatter}
 
     def configure_logger(self):
         """
@@ -68,27 +76,15 @@ class App:
         console.setFormatter(formatter)
         root_logger.addHandler(console)
 
-    @staticmethod
-    def result_output(website, temperature, conditions, provider):
+    def result_output(self, summary_info):
         """
-        :param website:
-        :param temperature:
-        :param conditions:
-        :param provider
+
+        :param summary_info:
         :return:
         """
-        if os.path.exists(provider.get_settings_file()):
-            print(provider.get_settings(provider.shortcut)[0])
-            print('=' * 20)
-        else:
-            print(config.CITY)
-            print('=' * 20)
-        print('From {}:'.format(website))
-        print('-' * 20)
-        print('Temperature: {}'
-              .format(html.unescape(temperature.replace(' ', ''))))
-        print('Weather conditions:' + '\n{}\n'
-              .format(conditions.strip()).replace(', ', '\n'))
+        formatter = self.formatters.get(self.commands.formatter)()
+        self.stdout.write(formatter.output_format(summary_info))
+        self.stdout.write('\n')
 
     def run(self):
         """
@@ -123,11 +119,8 @@ class App:
         else:
             configured_provider_box = provider_box
 
-        for name in configured_provider_box:
-            self.result_output(name,
-                               *WeatherProvider(App()).run(name),
-                               provider_box[name](App)
-                               )
+        for provider_name in configured_provider_box:
+            self.result_output(WeatherProvider(App()).run(provider_name))
 
 
 def main():
