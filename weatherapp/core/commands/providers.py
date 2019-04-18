@@ -14,6 +14,6 @@ class Providers(Command):
         """
         Run command
         """
-        providers = self.app.provider_manager._providers
+        providers = self.app.provider_manager
         for name in providers:
             print('{} - "{}"'.format(name, providers.get(name).title))

@@ -38,9 +38,9 @@ class WeatherProvider(Command):
         if self.get_cache(url) and self.cache_lifetime(url) and not self.app.commands.refresh:
             content = self.get_cache(url)
         else:
+            headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'}
+            request = Request(url, headers=headers)
             try:
-                headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'}
-                request = Request(url, headers=headers)
                 content = urlopen(request).read()  # if url is damaged
             except urllib.error.URLError:
                 msg = 'Bad configfile, use --reset'
@@ -183,7 +183,7 @@ class WeatherProvider(Command):
         """
         summary_info = {}
 
-        providers = self.app.provider_manager._providers
+        providers = self.app.provider_manager
         url = self.get_settings(provider_name)[1]
         page_content = self.get_page_content(url)
         weather_info = providers[provider_name](self.app).get_weather_info(page_content)
@@ -191,6 +191,5 @@ class WeatherProvider(Command):
         summary_info['Provider'] = providers[provider_name].title
         for key in weather_info:
             summary_info[key] = weather_info[key]
-
         return summary_info
 

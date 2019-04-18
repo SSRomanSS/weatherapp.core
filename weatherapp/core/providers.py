@@ -15,9 +15,8 @@ class AccuWeatherProvider(WeatherProvider):
     """
     Accuweather.com
     """
-    shortcut = config.ACCU_SHORTCUT
     title = config.ACCU_TITLE
-    provider_name = shortcut
+    provider_name = config.ACCU_SHORTCUT
     city = config.CITY
     url = config.ACCU_URL
 
@@ -28,8 +27,8 @@ class AccuWeatherProvider(WeatherProvider):
         """
         city = self.city
         url = self.url
-        shortcut = self.shortcut
-        self.save_settings(city, url, shortcut)
+        provider_name = self.provider_name
+        self.save_settings(city, url, provider_name)
 
     def create_settings(self, provider_name):
         """
@@ -80,7 +79,7 @@ class AccuWeatherProvider(WeatherProvider):
         self.save_settings(city, url, provider_name)
 
     def get_weather_info(self, page_content):
-        """ Get weather infomration.
+        """ Get weather information.
         """
 
         current_day_section = page_content.find(
@@ -117,9 +116,8 @@ class Rp5WeatherProvider(WeatherProvider):
     """
     RP5.ua
     """
-    shortcut = config.RP5_SHORTCUT
     title = config.RP5_TITLE
-    provider_name = shortcut
+    provider_name = config.RP5_SHORTCUT
     city = config.CITY
     url = config.RP5_URL
 
@@ -130,8 +128,8 @@ class Rp5WeatherProvider(WeatherProvider):
         """
         city = self.city
         url = self.url
-        shortcut = self.shortcut
-        self.save_settings(city, url, shortcut)
+        provider_name = self.provider_name
+        self.save_settings(city, url, provider_name)
 
     def create_settings(self, provider_name):
         """
@@ -192,7 +190,8 @@ class Rp5WeatherProvider(WeatherProvider):
                 break
         self.save_settings(city, url, provider_name)
 
-    def get_weather_info(self, page_content):
+    @staticmethod
+    def get_weather_info(page_content):
         """ Collect weather information
         """
 

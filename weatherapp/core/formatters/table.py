@@ -1,3 +1,6 @@
+"""
+
+"""
 import prettytable
 
 from weatherapp.core.abstract import Formatter
@@ -12,7 +15,7 @@ class TableFormatter(Formatter):
     def output_format(self, data):
         """
 
-        :param summary_info:
+        :param data:
         :return:
         """
 

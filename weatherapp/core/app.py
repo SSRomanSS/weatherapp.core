@@ -92,10 +92,10 @@ class App:
         """
         WeatherProvider(App()).clear_cache()
         self.configure_logger()
-        provider_box = self.provider_manager._providers
 
-        if self.commands.site is not None and self.commands.site not in provider_box\
-                and self.commands.settings not in provider_box:
+        if self.commands.site is not None\
+                and self.commands.site not in self.provider_manager\
+                and self.commands.settings not in self.provider_manager:
             sys.exit('Unknown command')
 
         if self.commands.settings == 'reset' and \
@@ -103,24 +103,22 @@ class App:
             os.remove(WeatherProvider(App()).get_settings_file())  # removing settings file
 
         if not os.path.exists(WeatherProvider(App()).get_settings_file()):
-            for provider in provider_box:
-                provider_box[provider](App).create_default_settings()
+            for provider_name in self.provider_manager:
+                self.provider_manager[provider_name](App).create_default_settings()
                 # create file with default settings
         if self.commands.providers:
             print('Available providers:')
             sys.exit(self.command_manager.get(self.commands.providers)(App()).run())
 
-        if self.commands.settings in provider_box:
+        if self.commands.settings in self.provider_manager:
             self.command_manager.get('settings')(App()).run(self.commands.settings)
             # create settings for selected provider
 
-        if self.commands.site in provider_box:
-            configured_provider_box = {self.commands.site: provider_box[self.commands.site]}
+        if self.commands.site in self.provider_manager:
+            self.result_output(WeatherProvider(App()).run(self.commands.site))
         else:
-            configured_provider_box = provider_box
-
-        for provider_name in configured_provider_box:
-            self.result_output(WeatherProvider(App()).run(provider_name))
+            for provider_name in self.provider_manager:
+                self.result_output(WeatherProvider(App()).run(provider_name))
 
 
 def main():

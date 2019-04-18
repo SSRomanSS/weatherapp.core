@@ -23,7 +23,7 @@ class ProviderManager(abstract.Manager):
         :return:
         """
         for provider in [AccuWeatherProvider, Rp5WeatherProvider]:
-            self.add(provider.shortcut, provider)
+            self.add(provider.provider_name, provider)
 
     def add(self, name, provider):
         """
@@ -64,3 +64,11 @@ class ProviderManager(abstract.Manager):
         :return:
         """
         return self._providers[name]
+
+    def __iter__(self):
+        """
+
+        :return:
+        """
+        for key in self._providers:
+            yield key
