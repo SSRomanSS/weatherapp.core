@@ -4,8 +4,8 @@ Weather providers
 """
 import sys
 from urllib.parse import quote
-from htmldom import htmldom
 import re
+from htmldom import htmldom
 
 from weatherapp.core import config
 from weatherapp.core.abstract import WeatherProvider
@@ -201,7 +201,8 @@ class Rp5WeatherProvider(WeatherProvider):
         if current_day:
             weather_info['Conditions'] = re.search(r'b>.*</b',
                                                    current_day.find('div',
-                                                   class_='cc_0').div['onmouseover']).group()[2:-3]
+                                                                    class_='cc_0')
+                                                   .div['onmouseover']).group()[2:-3]
             temp = current_day.find('div', class_='t_0')
             if temp:
                 weather_info['Temperature'] = temp.text
@@ -209,6 +210,7 @@ class Rp5WeatherProvider(WeatherProvider):
                 if wind:
                     weather_info['Wind'] = re.search(r', .*,',
                                                      current_day.find('td',
-                                                     class_='wn').div['onmouseover']).group()[3:-3]
+                                                                      class_='wn')
+                                                     .div['onmouseover']).group()[3:-3]
 
         return weather_info

@@ -1,5 +1,5 @@
 """
-
+Formatter for output in console
 """
 import prettytable
 

@@ -1,3 +1,6 @@
+"""
+Abstract class for formatters
+"""
 import abc
 
 

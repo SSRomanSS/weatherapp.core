@@ -1,5 +1,5 @@
 """
-
+Configure provider
 """
 from weatherapp.core.abstract import Command
 

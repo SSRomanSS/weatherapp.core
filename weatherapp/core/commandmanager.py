@@ -1,5 +1,5 @@
 """
-
+Manager for commands
 """
 from weatherapp.core.commands import Configurate, Providers
 from weatherapp.core import providermanager

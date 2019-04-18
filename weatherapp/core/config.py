@@ -28,5 +28,3 @@ CONFIG_FILE = 'weatherapp.ini'
 CACHE_DIR = '.weather_cache'
 
 TIME_CACHE = 300
-
-

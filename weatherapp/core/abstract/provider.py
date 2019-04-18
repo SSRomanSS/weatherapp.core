@@ -192,4 +192,3 @@ class WeatherProvider(Command):
         for key in weather_info:
             summary_info[key] = weather_info[key]
         return summary_info
-

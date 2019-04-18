@@ -1,5 +1,5 @@
 """
-
+Abstract class for manager
 """
 
 import abc
@@ -43,10 +43,10 @@ class Manager(abc.ABC):
         :param name:
         :return:
         """
+
     @abc.abstractmethod
     def __iter__(self):
         """
 
         :return:
         """
-
