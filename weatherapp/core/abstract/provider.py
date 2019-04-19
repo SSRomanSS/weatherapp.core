@@ -13,7 +13,6 @@ import hashlib
 from bs4 import BeautifulSoup
 
 
-
 from weatherapp.core import config
 from weatherapp.core.abstract.command import Command
 
@@ -149,7 +148,7 @@ class WeatherProvider(Command):
         # Configuration values were read using ConfigParser,
         # which does string interpolation, for instance making it impossible to use "%".
         # Switches to RawConfigParser to avoid any special treatment of configuration values
-        open(self.get_settings_file(), 'r+')
+        open(self.get_settings_file(), 'r+', encoding='utf8')
         try:
             settings.read(self.get_settings_file(), encoding='utf8')  # if configfile is damaged
         except configparser.Error:
