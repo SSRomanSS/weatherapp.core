@@ -68,3 +68,7 @@ class WeatherProviderTestCase(unittest.TestCase):
 
         os.remove(str(Path.home() / settings_file))
         self.assertFalse((Path.home() / settings_file).exists())
+
+
+if __name__ == '__main__':
+    unittest.main()
